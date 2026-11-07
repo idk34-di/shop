@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cagliari</title>
+<title>idk34-Shop</title>
 <style>
 :root{--c:#3aa0d8;--c2:#8fcdf0;--bordo:#e6f3fb}
 *{box-sizing:border-box;margin:0}
@@ -14,7 +14,7 @@ main{max-width:1000px;margin:0 auto;padding:0 16px 120px}
 .hero{text-align:center;padding:70px 0 44px}
 .ventaglio{position:relative;height:190px;max-width:420px;margin:0 auto 34px}
 .carta{position:absolute;left:50%;bottom:0;width:170px;height:120px;margin-left:-85px;
-  overflow:hidden;border-radius:10px;border:3px solid #fff;
+  overflow:hidden;border-radius:10px;border:3px solid #fff;background:#f3f9fd;
   box-shadow:0 6px 18px rgba(58,160,216,.25);transform-origin:50% 330%}
 .carta img{width:100%;height:240px;object-fit:cover;object-position:top;display:block}
 .carta:nth-child(1){transform:rotate(-17deg);z-index:1}
@@ -35,8 +35,8 @@ main{max-width:1000px;margin:0 auto;padding:0 16px 120px}
 .toggle.open .fr{transform:rotate(180deg)}
 .grid{display:none;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding-top:10px}
 .grid.open{display:grid}
-.ph{position:relative;cursor:pointer;border:2px solid transparent;border-radius:6px;overflow:hidden;background:#f3f9fd}
-.ph img{width:100%;aspect-ratio:1;object-fit:cover;display:block;
+.ph{position:relative;cursor:pointer;border:2px solid transparent;border-radius:6px;overflow:hidden;background:#f3f9fd;aspect-ratio:1}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;
   -webkit-user-drag:none;user-select:none;pointer-events:none}
 .ph.sel{border-color:var(--c)}
 .ph.sel::after{content:"✓";position:absolute;top:6px;right:6px;width:24px;height:24px;
@@ -79,9 +79,11 @@ footer{text-align:center;color:var(--c2);font-size:12px;margin-top:40px}
 <script>
 /* ═══════ VALORI DA MODIFICARE ═══════ */
 const API = "https://TUO-WORKER.TUOACCOUNT.workers.dev";
-const CARTELLA = "anteprime";   // cartella con le foto a bassa qualità
+const CARTELLA = "foto";        // cartella del repository con tutte le foto
 const PREZZO_PACK = 10;         // euro
 const PREZZO_SINGOLA = 0.99;    // euro
+const LATO_MAX = 500;           // lato massimo (px) delle foto mostrate sul sito
+const QUALITA = 0.35;           // qualità JPEG delle foto mostrate (0-1)
 
 /* Le 12 foto del pacchetto (le prime 3 finiscono nel ventaglio) */
 const PACCHETTO = [
@@ -108,24 +110,57 @@ const TUTTE = [
 const eur = x => x.toFixed(2).replace(".", ",") + " €";
 const src = nome => CARTELLA + "/" + nome;
 
+/* Carica la foto e la mostra ridotta e a bassa qualità (disegnata su canvas) */
+function caricaBassa(img){
+  const o = new Image();
+  o.onload = () => {
+    const k = Math.min(1, LATO_MAX / Math.max(o.naturalWidth, o.naturalHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.round(o.naturalWidth * k);
+    c.height = Math.round(o.naturalHeight * k);
+    c.getContext("2d").drawImage(o, 0, 0, c.width, c.height);
+    img.src = c.toDataURL("image/jpeg", QUALITA);
+  };
+  o.src = src(img.dataset.nome);
+}
+
 document.getElementById("prezzoPack").textContent = eur(PREZZO_PACK).replace(",00", "");
 document.getElementById("prezzoSingola").textContent = eur(PREZZO_SINGOLA);
 
 /* Ventaglio: 3 foto tagliate a metà */
-document.getElementById("ventaglio").innerHTML = PACCHETTO.slice(0, 3)
-  .map(n => `<div class="carta"><img src="${src(n)}" alt=""></div>`).join("");
+const vent = document.getElementById("ventaglio");
+PACCHETTO.slice(0, 3).forEach(n => {
+  const d = document.createElement("div");
+  d.className = "carta";
+  const im = document.createElement("img");
+  im.dataset.nome = n;
+  im.alt = "";
+  d.appendChild(im);
+  vent.appendChild(d);
+  caricaBassa(im);
+});
 
-/* Griglia: si costruisce e si mostra solo quando premi "Scegli manualmente" */
+/* Griglia: si costruisce solo quando premi "Scegli manualmente",
+   e ogni foto viene caricata solo quando sta per entrare nello schermo */
 const sel = new Set();
 const grid = document.getElementById("grid");
 const toggle = document.getElementById("toggle");
 let costruita = false;
 
 function costruisciGriglia(){
+  const osserva = new IntersectionObserver(voci => {
+    voci.forEach(v => {
+      if(v.isIntersecting){
+        osserva.unobserve(v.target);
+        caricaBassa(v.target.querySelector("img"));
+      }
+    });
+  }, {rootMargin: "300px"});
+
   TUTTE.forEach(nome => {
     const d = document.createElement("div");
     d.className = "ph";
-    d.innerHTML = `<img loading="lazy" src="${src(nome)}" alt="" draggable="false">`;
+    d.innerHTML = `<img data-nome="${nome}" alt="" draggable="false">`;
     d.oncontextmenu = e => e.preventDefault();
     d.onclick = () => {
       sel.has(nome) ? sel.delete(nome) : sel.add(nome);
@@ -133,6 +168,7 @@ function costruisciGriglia(){
       aggiorna();
     };
     grid.appendChild(d);
+    osserva.observe(d);
   });
   costruita = true;
 }
