@@ -1,121 +1,17 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Le mie foto</title>
-<style>
-  :root{--bg:#0e0e10;--card:#18181c;--txt:#f4f4f5;--mut:#9a9aa5;--acc:#ffb347;--acc2:#ff6b6b}
-  *{box-sizing:border-box;margin:0}
-  body{background:var(--bg);color:var(--txt);font-family:system-ui,sans-serif}
-  header{padding:48px 20px 24px;text-align:center}
-  header h1{font-size:clamp(2rem,6vw,3.5rem);letter-spacing:-1px}
-  header p{color:var(--mut);margin-top:8px}
-  .pack{max-width:760px;margin:24px auto;padding:28px;border-radius:20px;
-    background:linear-gradient(135deg,var(--acc),var(--acc2));color:#111;text-align:center}
-  .pack h2{font-size:1.6rem}
-  .pack .price{font-size:3rem;font-weight:800;margin:8px 0}
-  .pack button{background:#111;color:#fff;border:0;padding:14px 28px;border-radius:999px;
-    font-size:1rem;cursor:pointer}
-  .pack button:hover{transform:scale(1.04)}
-  h3.sec{max-width:1100px;margin:40px auto 12px;padding:0 20px}
-  .grid{max-width:1100px;margin:0 auto;padding:0 20px 120px;
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
-  .ph{position:relative;background:var(--card);border-radius:14px;overflow:hidden;
-    cursor:pointer;border:2px solid transparent;transition:.2s}
-  .ph:hover{transform:translateY(-4px)}
-  .ph.sel{border-color:var(--acc)}
-  .ph img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
-  .ph .meta{display:flex;justify-content:space-between;padding:10px 12px;font-size:.9rem}
-  .ph .meta span:last-child{color:var(--acc)}
-  .ph::after{content:"ANTEPRIMA";position:absolute;top:40%;left:0;right:0;text-align:center;
-    font-weight:800;letter-spacing:4px;color:#fff3;transform:rotate(-15deg);pointer-events:none}
-  .bar{position:fixed;bottom:0;left:0;right:0;background:#000d;backdrop-filter:blur(10px);
-    padding:14px 20px;display:none;justify-content:space-between;align-items:center}
-  .bar.show{display:flex}
-  .bar button{background:var(--acc);border:0;padding:12px 24px;border-radius:999px;
-    font-weight:700;cursor:pointer}
-  .ok{max-width:700px;margin:40px auto;padding:24px;background:var(--card);border-radius:16px}
-  .ok a{display:block;color:var(--acc);margin:8px 0}
-  small.note{display:block;text-align:center;color:var(--mut);margin:24px 0}
-</style>
-</head>
-<body>
-<header>
-  <h1>📷 Le mie foto</h1>
-  <p>Scarica subito dopo il pagamento · Alta risoluzione · Pagamento sicuro con Stripe</p>
-</header>
+// 1) elenco delle 12 del pacchetto: stessi nomi di PACCHETTO nel sito
+const PACK_IDS = [
+  "IMG_7305.jpg","IMG_7307.jpg","IMG_7313.JPG","IMG_7316.jpg",
+  "IMG_7585.jpg","IMG_7588.JPG","IMG_7597.jpg","IMG_7603.JPG",
+  "IMG_7606.JPG","IMG_7610.jpg","IMG_7767.jpg","IMG_7782.jpg"
+];
 
-<div id="thanks"></div>
+// 2) in /checkout: limite per rispettare i 500 caratteri dei metadata di Stripe
+list = [...new Set(ids || [])].slice(0, 30);
 
-<section class="pack">
-  <h2>Pacchetto selezionato</h2>
-  <p>Le 12 foto scelte da me</p>
-  <div class="price">10 €</div>
-  <button onclick="buyPack()">Acquista il pacchetto</button>
-</section>
+// 3) in /downloads: il nome è già completo
+files: s.metadata.ids.split(",").map(id => ({ name: id, url: base + id }))
 
-<h3 class="sec">Oppure scegli le tue — 0,99 € ciascuna</h3>
-<div class="grid" id="grid"></div>
-
-<div class="bar" id="bar">
-  <div><b id="count">0</b> foto · <b id="total">0,00 €</b></div>
-  <button onclick="buySelected()">Paga e scarica</button>
-</div>
-
-<small class="note">Non salvo dati di pagamento: li gestisce solo Stripe.</small>
-
-<script>
-  const API = "https://TUO-WORKER.TUOACCOUNT.workers.dev"; // <-- cambia
-  // Anteprime a bassa risoluzione (messe nel tuo sito). "id" = nome file nel bucket privato
-  const PHOTOS = [
-    {id:"foto01", title:"Tramonto",  preview:"preview/foto01.jpg"},
-    {id:"foto02", title:"Montagna",  preview:"preview/foto02.jpg"},
-    // ...aggiungi le altre
-  ];
-
-  const sel = new Set();
-  const grid = document.getElementById("grid");
-
-  PHOTOS.forEach(p=>{
-    const d = document.createElement("div");
-    d.className = "ph";
-    d.innerHTML = `<img src="${p.preview}" alt="${p.title}" loading="lazy">
-      <div class="meta"><span>${p.title}</span><span>0,99 €</span></div>`;
-    d.onclick = ()=>{
-      sel.has(p.id) ? sel.delete(p.id) : sel.add(p.id);
-      d.classList.toggle("sel");
-      updateBar();
-    };
-    grid.appendChild(d);
-  });
-
-  function updateBar(){
-    document.getElementById("count").textContent = sel.size;
-    document.getElementById("total").textContent = (sel.size*0.99).toFixed(2).replace(".",",")+" €";
-    document.getElementById("bar").classList.toggle("show", sel.size>0);
-  }
-
-  async function checkout(body){
-    const r = await fetch(API+"/checkout",{method:"POST",
-      headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-    const j = await r.json();
-    if(j.url) location.href = j.url; else alert("Errore: "+(j.error||"riprova"));
-  }
-  const buyPack = ()=>checkout({pack:true});
-  const buySelected = ()=>checkout({ids:[...sel]});
-
-  // Dopo il pagamento Stripe ci riporta qui con ?session_id=...
-  (async()=>{
-    const sid = new URLSearchParams(location.search).get("session_id");
-    if(!sid) return;
-    const r = await fetch(`${API}/downloads?session_id=${encodeURIComponent(sid)}`);
-    const j = await r.json();
-    const box = document.getElementById("thanks");
-    if(!j.files){ box.innerHTML = `<div class="ok">Pagamento non ancora confermato. Ricarica tra poco.</div>`; return; }
-    box.innerHTML = `<div class="ok"><h2>Grazie! 🎉</h2><p>Scarica le tue foto:</p>`+
-      j.files.map(f=>`<a href="${f.url}" download>⬇ ${f.name}</a>`).join("")+`</div>`;
-  })();
-</script>
-</body>
-</html>
+// 4) in /file: niente ".jpg" aggiunto
+const obj = await env.PHOTOS.get(id);
+...
+"Content-Disposition": `attachment; filename="${id}"`,
