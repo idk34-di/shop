@@ -1,17 +1,1 @@
-// 1) elenco delle 12 del pacchetto: stessi nomi di PACCHETTO nel sito
-const PACK_IDS = [
-  "IMG_7305.jpg","IMG_7307.jpg","IMG_7313.JPG","IMG_7316.jpg",
-  "IMG_7585.jpg","IMG_7588.JPG","IMG_7597.jpg","IMG_7603.JPG",
-  "IMG_7606.JPG","IMG_7610.jpg","IMG_7767.jpg","IMG_7782.jpg"
-];
-
-// 2) in /checkout: limite per rispettare i 500 caratteri dei metadata di Stripe
-list = [...new Set(ids || [])].slice(0, 30);
-
-// 3) in /downloads: il nome è già completo
-files: s.metadata.ids.split(",").map(id => ({ name: id, url: base + id }))
-
-// 4) in /file: niente ".jpg" aggiunto
-const obj = await env.PHOTOS.get(id);
-...
-"Content-Disposition": `attachment; filename="${id}"`,
+-
