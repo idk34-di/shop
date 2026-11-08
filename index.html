@@ -121,15 +121,14 @@ footer{text-align:center;font-size:12px;margin-top:26px}
 /* ═══════ VALORI DA MODIFICARE ═══════ */
 const API = "https://frosty-field-353f.ism-gbb.workers.dev";
 const NOME_SITO = "IDK34 - SHOP";   // scritta nella pillola in alto
-const BASE_FOTO = "foto";           // cartella delle foto nel repository
-const LATO_MAX = 500;               // lato massimo (px) delle foto mostrate
-const QUALITA = 0.35;               // qualità JPEG delle foto mostrate (0-1)
+const SITO_FOTO = "https://idk34-di.github.io/shop/foto";   // indirizzo della cartella foto (senza barra finale)
+const LARGHEZZA = 500;              // larghezza (px) delle foto mostrate
+const QUALITA = 35;                 // qualità JPEG delle foto mostrate (1-100)
 /* Collezioni, prezzi e foto si modificano in catalogo.json */
 /* ═══════ FINE VALORI ═══════ */
 
 const eur = x => x.toFixed(2).replace(".", ",") + " €";
 const eurPulito = x => eur(x).replace(",00", "");
-const src = nome => BASE_FOTO + "/" + nome;
 const $ = id => document.getElementById(id);
 
 $("nomeSito").textContent = NOME_SITO;
@@ -141,28 +140,18 @@ let sceltaPronta = false;
 
 const inColl = nome => tutte.filter(n => CAT.foto[n] === nome);
 
-/* Mostra la foto ridotta e a bassa qualità (disegnata su canvas) */
-function caricaBassa(img){
-  const o = new Image();
-  o.crossOrigin = "anonymous";
-  o.onload = () => {
-    try{
-      const k = Math.min(1, LATO_MAX / Math.max(o.naturalWidth, o.naturalHeight));
-      const c = document.createElement("canvas");
-      c.width = Math.round(o.naturalWidth * k);
-      c.height = Math.round(o.naturalHeight * k);
-      c.getContext("2d").drawImage(o, 0, 0, c.width, c.height);
-      img.src = c.toDataURL("image/jpeg", QUALITA);
-    }catch(e){ console.error("Canvas bloccato:", e); }
-  };
-  o.onerror = () => console.error("Foto non trovata:", src(img.dataset.nome));
-  o.src = src(img.dataset.nome);
-}
+/* Foto ridotta e a bassa qualità, preparata da wsrv.nl (servizio gratuito con cache) */
+const anteprima = nome =>
+  "https://wsrv.nl/?url=" + encodeURIComponent(SITO_FOTO + "/" + nome) +
+  "&w=" + LARGHEZZA + "&q=" + QUALITA + "&output=jpg";
 
 /* Ogni foto si carica solo quando sta per entrare nello schermo */
 const oss = new IntersectionObserver(voci => {
   voci.forEach(v => {
-    if(v.isIntersecting){ oss.unobserve(v.target); caricaBassa(v.target); }
+    if(v.isIntersecting){
+      oss.unobserve(v.target);
+      v.target.src = anteprima(v.target.dataset.nome);
+    }
   });
 }, {rootMargin: "300px"});
 
