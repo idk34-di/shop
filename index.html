@@ -3,35 +3,41 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>idk34-shop</title>
+<title>idk34-Shop</title>
 <style>
-:root{--c:#3aa0d8;--c2:#8fcdf0;--bordo:#e6f3fb}
+:root{--c:#111;--bordo:#e5e5e5;--sfondo:#f2f2f2}
 *{box-sizing:border-box;margin:0}
 body{font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;background:#fff;color:var(--c);line-height:1.3}
 a{color:inherit;text-decoration:none}
 [hidden]{display:none!important}
 main{max-width:960px;margin:0 auto;padding:0 18px 120px}
 
-/* Header: indietro a sinistra, menu a destra */
-header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;
-  padding:12px 18px;background:#fff}
-header a,header button{font-size:28px;line-height:1;background:none;border:0;color:var(--c);cursor:pointer;padding:4px 6px}
-#indietro{visibility:hidden}
-#indietro.on{visibility:visible}
-#menu{position:absolute;right:12px;top:54px;background:#fff;border:1px solid var(--bordo);
-  border-radius:12px;box-shadow:0 8px 24px rgba(58,160,216,.18);padding:6px 0;min-width:220px}
-#menu a{display:block;padding:13px 20px;font-size:16px;font-weight:400}
-#menu a:hover{background:#f3f9fd}
+/* Header: pillola con il nome + cerchio del menu */
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
+  padding:14px max(18px,calc((100vw - 924px)/2));background:#fff}
+.pill{flex:1;display:flex;align-items:center;justify-content:center;height:46px;
+  border:1.5px solid var(--c);border-radius:999px;font-size:16px;font-weight:500;letter-spacing:1.5px}
+.cerchio{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--c);background:#fff;
+  color:var(--c);font-size:20px;line-height:1;cursor:pointer}
+#menu{position:absolute;top:70px;right:max(18px,calc((100vw - 924px)/2));background:#fff;
+  border:1.5px solid var(--c);border-radius:16px;padding:8px 32px;text-align:center;min-width:210px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12)}
+#menu a{display:block;padding:14px 0;font-size:22px;text-decoration:underline;
+  text-decoration-thickness:1px;text-underline-offset:7px}
 
-/* Home: collezioni una sotto l'altra, foto 4:5 */
-.collezioni{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:52px 28px;padding-top:10px}
-.coll{display:block}
-.coll .img{aspect-ratio:4/5;background:#f3f9fd;overflow:hidden;border-radius:4px}
-.coll img{width:100%;height:100%;object-fit:cover;display:block}
-.coll h2{font-size:34px;font-weight:800;letter-spacing:-.5px;margin-top:14px}
-.coll p{font-size:20px;font-weight:200;margin-top:2px}
-.fondo{display:block;text-align:center;margin-top:70px;padding:24px 0;border-top:1px solid var(--bordo);font-size:18px}
-footer{text-align:center;color:var(--c2);font-size:12px;margin-top:30px}
+/* Home: collezioni = tre foto affiancate con etichetta */
+.collezioni{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;padding-top:6px}
+.coll{position:relative;display:block;aspect-ratio:3/2;border-radius:14px;overflow:hidden;background:var(--sfondo)}
+.trittico{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;height:100%}
+.trittico img{width:100%;height:100%;object-fit:cover;display:block}
+.etichetta{position:absolute;left:14px;right:14px;bottom:14px;display:flex;justify-content:space-between;
+  align-items:baseline;padding:12px 18px;background:#fff;border:1.5px solid var(--c);border-radius:12px}
+.etichetta b{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.etichetta span{font-size:16px;font-weight:200}
+.fondo{display:block;text-align:center;margin-top:40px;padding:18px;border:1.5px solid var(--c);
+  border-radius:12px;font-size:18px;transition:.2s}
+.fondo:hover{background:var(--c);color:#fff}
+footer{text-align:center;font-size:12px;margin-top:26px}
 
 /* Titoli di pagina */
 .titolo{font-size:38px;font-weight:800;letter-spacing:-.5px;margin:10px 0 18px}
@@ -39,7 +45,7 @@ footer{text-align:center;color:var(--c2);font-size:12px;margin-top:30px}
 
 /* Griglia di foto 4:5 */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.ph{position:relative;aspect-ratio:4/5;background:#f3f9fd;border:2px solid transparent;border-radius:6px;overflow:hidden}
+.ph{position:relative;aspect-ratio:4/5;background:var(--sfondo);border:2px solid transparent;border-radius:6px;overflow:hidden}
 .ph img{width:100%;height:100%;object-fit:cover;display:block;
   -webkit-user-drag:none;user-select:none;pointer-events:none}
 #gridScegli .ph{cursor:pointer}
@@ -50,31 +56,31 @@ footer{text-align:center;color:var(--c2);font-size:12px;margin-top:30px}
 /* Pagina collezione: "Acquista" al centro dello schermo sopra le foto, prezzo sotto */
 .vetro{position:relative}
 .cta-box{position:sticky;top:calc(50vh - 26px);height:0;z-index:5;text-align:center}
-.cta{display:inline-block;padding:14px 40px;font-size:17px;border:1px solid var(--c);border-radius:999px;
-  background:rgba(255,255,255,.95);color:var(--c);cursor:pointer;box-shadow:0 6px 20px rgba(58,160,216,.3)}
+.cta{display:inline-block;padding:14px 40px;font-size:17px;border:1.5px solid var(--c);border-radius:999px;
+  background:rgba(255,255,255,.96);color:var(--c);cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.2)}
 .cta:hover{background:var(--c);color:#fff}
 .prezzoColl{text-align:center;font-size:42px;font-weight:200;margin:28px 0}
 
-/* Barra carrello (solo in "Scegli quali scaricare") */
+/* Barra carrello (solo in "Scegli") */
 .bar{position:fixed;left:0;right:0;bottom:0;display:none;justify-content:space-between;align-items:center;
-  padding:14px 20px;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-top:1px solid var(--bordo)}
+  padding:14px 20px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--bordo)}
 .bar.show{display:flex}
-.btn{padding:12px 30px;font-size:15px;border:1px solid var(--c);border-radius:999px;
+.btn{padding:12px 30px;font-size:15px;border:1.5px solid var(--c);border-radius:999px;
   background:#fff;color:var(--c);cursor:pointer}
 .btn:hover{background:var(--c);color:#fff}
 
-.ok{max-width:560px;margin:20px auto 0;padding:22px;border:1px solid var(--bordo);border-radius:12px;text-align:center}
-.ok a{display:block;margin:8px 0}
+.ok{max-width:560px;margin:20px auto 0;padding:22px;border:1.5px solid var(--c);border-radius:12px;text-align:center}
+.ok a{display:block;margin:8px 0;text-decoration:underline}
 </style>
 </head>
 <body>
 
 <header>
-  <a id="indietro" href="#" aria-label="Indietro">←</a>
-  <button id="menuBtn" aria-label="Menu">☰</button>
+  <a class="pill" id="nomeSito" href="#"></a>
+  <button class="cerchio" id="menuBtn" aria-label="Menu">☰</button>
   <nav id="menu" hidden>
     <a href="#">Collezioni</a>
-    <a href="#scegli">Scegli quali scaricare</a>
+    <a href="#scegli">Scegli</a>
   </nav>
 </header>
 
@@ -84,7 +90,7 @@ footer{text-align:center;color:var(--c2);font-size:12px;margin-top:30px}
   <!-- HOME: tutte le collezioni -->
   <section id="home">
     <div class="collezioni" id="collezioni"></div>
-    <a class="fondo" href="#scegli">Scegli quali scaricare</a>
+    <a class="fondo" href="#scegli">Scegli</a>
     <footer>Nessun dato viene registrato</footer>
   </section>
 
@@ -98,9 +104,9 @@ footer{text-align:center;color:var(--c2);font-size:12px;margin-top:30px}
     <div class="prezzoColl" id="prezzoColl"></div>
   </section>
 
-  <!-- SCEGLI QUALI SCARICARE (tutte le foto) -->
+  <!-- SCEGLI (tutte le foto) -->
   <section id="scegli" hidden>
-    <h1 class="titolo">Scegli quali scaricare</h1>
+    <h1 class="titolo">Scegli</h1>
     <p class="sottile" id="prezzoSingola"></p>
     <div class="grid" id="gridScegli"></div>
   </section>
@@ -113,10 +119,11 @@ footer{text-align:center;color:var(--c2);font-size:12px;margin-top:30px}
 
 <script>
 /* ═══════ VALORI DA MODIFICARE ═══════ */
-const API = "https://TUO-WORKER.TUOACCOUNT.workers.dev";
-const BASE_FOTO = "foto";   // cartella delle foto nel repository
-const LATO_MAX = 500;       // lato massimo (px) delle foto mostrate
-const QUALITA = 0.35;       // qualità JPEG delle foto mostrate (0-1)
+const API = "https://frosty-field-353f.ism-gbb.workers.dev";
+const NOME_SITO = "IDK34 - SHOP";   // scritta nella pillola in alto
+const BASE_FOTO = "foto";           // cartella delle foto nel repository
+const LATO_MAX = 500;               // lato massimo (px) delle foto mostrate
+const QUALITA = 0.35;               // qualità JPEG delle foto mostrate (0-1)
 /* Collezioni, prezzi e foto si modificano in catalogo.json */
 /* ═══════ FINE VALORI ═══════ */
 
@@ -124,6 +131,9 @@ const eur = x => x.toFixed(2).replace(".", ",") + " €";
 const eurPulito = x => eur(x).replace(",00", "");
 const src = nome => BASE_FOTO + "/" + nome;
 const $ = id => document.getElementById(id);
+
+$("nomeSito").textContent = NOME_SITO;
+document.title = NOME_SITO;
 
 let CAT, tutte, visibili;
 const sel = new Set();
@@ -177,11 +187,17 @@ function disegnaHome(){
     const a = document.createElement("a");
     a.className = "coll";
     a.href = "#c/" + encodeURIComponent(nome);
-    a.innerHTML = `<div class="img"><img alt=""></div><h2></h2><p>scarica</p>`;
-    a.querySelector("h2").textContent = nome;
-    const im = a.querySelector("img");
-    im.dataset.nome = inColl(nome)[0];   // copertina = prima foto della collezione
-    oss.observe(im);
+    a.innerHTML = `<div class="trittico"></div>
+      <div class="etichetta"><b></b><span>scarica</span></div>`;
+    a.querySelector("b").textContent = nome;
+    const tr = a.querySelector(".trittico");
+    inColl(nome).slice(0, 3).forEach(n => {      // le prime 3 foto della collezione
+      const im = document.createElement("img");
+      im.dataset.nome = n;
+      im.alt = "";
+      tr.appendChild(im);
+      oss.observe(im);
+    });
     box.appendChild(a);
   });
 }
@@ -196,7 +212,7 @@ function disegnaColl(nome){
   $("bColl").onclick = () => checkout({collezione: nome});
 }
 
-/* ───── SCEGLI QUALI SCARICARE ───── */
+/* ───── SCEGLI ───── */
 function costruisciScegli(){
   const g = $("gridScegli");
   tutte.forEach(nome => {
@@ -228,7 +244,6 @@ function route(){
   $("home").hidden = v !== "home";
   $("vistaColl").hidden = v !== "coll";
   $("scegli").hidden = v !== "scegli";
-  $("indietro").classList.toggle("on", v !== "home");
   $("menu").hidden = true;
 
   if(v === "coll") disegnaColl(nome);
@@ -237,7 +252,7 @@ function route(){
   aggiorna();
 }
 
-/* Menu in alto a destra */
+/* Menu (cerchio in alto a destra) */
 $("menuBtn").onclick = e => { e.stopPropagation(); $("menu").hidden = !$("menu").hidden; };
 document.addEventListener("click", () => { $("menu").hidden = true; });
 
