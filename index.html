@@ -3,14 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>idk34-Shop</title>
+<title>idk34-shop</title>
 <style>
 :root{--c:#3aa0d8;--c2:#8fcdf0;--bordo:#e6f3fb}
 *{box-sizing:border-box;margin:0}
 body{font-family:system-ui,sans-serif;background:#fff;color:var(--c);line-height:1.5}
+a{color:inherit;text-decoration:none}
 main{max-width:1000px;margin:0 auto;padding:0 16px 120px}
+[hidden]{display:none!important}
 
-/* Ventaglio */
+/* ───── HOME ───── */
 .hero{text-align:center;padding:70px 0 44px}
 .ventaglio{position:relative;height:190px;max-width:420px;margin:0 auto 34px}
 .carta{position:absolute;left:50%;bottom:0;width:170px;height:120px;margin-left:-85px;
@@ -25,17 +27,19 @@ main{max-width:1000px;margin:0 auto;padding:0 16px 120px}
 .btn{padding:13px 34px;font-size:15px;border:1px solid var(--c);border-radius:999px;
   background:#fff;color:var(--c);cursor:pointer;transition:.2s}
 .btn:hover{background:var(--c);color:#fff}
+.vai{display:flex;justify-content:center;align-items:center;gap:10px;padding:22px 0;
+  border-top:1px solid var(--bordo);font-size:18px}
+.vai small{color:var(--c2);font-size:14px}
+footer{text-align:center;color:var(--c2);font-size:12px;margin-top:40px}
 
-/* Scegli manualmente (chiuso finché non lo premi) */
-.toggle{width:100%;display:flex;justify-content:center;align-items:center;gap:10px;
-  padding:22px 0;border:0;border-top:1px solid var(--bordo);background:none;
-  color:var(--c);font-size:18px;cursor:pointer}
-.toggle small{color:var(--c2);font-size:14px}
-.toggle .fr{display:inline-block;transition:transform .25s}
-.toggle.open .fr{transform:rotate(180deg)}
-.grid{display:none;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding-top:10px}
-.grid.open{display:grid}
-.ph{position:relative;cursor:pointer;border:2px solid transparent;border-radius:6px;overflow:hidden;background:#f3f9fd;aspect-ratio:1}
+/* ───── PAGINA "SCEGLI MANUALMENTE" ───── */
+.top{display:flex;align-items:center;gap:14px;padding:18px 0}
+.top a{font-size:26px;line-height:1}
+.top span{font-size:18px}
+.top small{color:var(--c2);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ph{position:relative;cursor:pointer;border:2px solid transparent;border-radius:6px;
+  overflow:hidden;background:#f3f9fd;aspect-ratio:1}
 .ph img{width:100%;height:100%;object-fit:cover;display:block;
   -webkit-user-drag:none;user-select:none;pointer-events:none}
 .ph.sel{border-color:var(--c)}
@@ -49,26 +53,32 @@ main{max-width:1000px;margin:0 auto;padding:0 16px 120px}
 
 .ok{max-width:560px;margin:36px auto 0;padding:22px;border:1px solid var(--bordo);border-radius:12px;text-align:center}
 .ok a{display:block;color:var(--c);margin:8px 0}
-footer{text-align:center;color:var(--c2);font-size:12px;margin-top:40px}
 </style>
 </head>
 <body>
 <main>
   <div id="grazie"></div>
 
-  <section class="hero">
-    <div class="ventaglio" id="ventaglio"></div>
-    <h1>Cagliari</h1>
-    <div class="prezzo" id="prezzoPack"></div>
-    <button class="btn" id="bPack">Acquista</button>
+  <!-- HOME -->
+  <section id="home">
+    <div class="hero">
+      <div class="ventaglio" id="ventaglio"></div>
+      <h1>Cagliari</h1>
+      <div class="prezzo" id="prezzoPack"></div>
+      <button class="btn" id="bPack">Acquista</button>
+    </div>
+    <a class="vai" href="#scegli">Scegli manualmente <small id="prezzoSingola"></small> →</a>
+    <footer>Nessun dato viene registrato</footer>
   </section>
 
-  <button class="toggle" id="toggle">
-    Scegli manualmente <small id="prezzoSingola"></small> <span class="fr">⌄</span>
-  </button>
-  <div class="grid" id="grid"></div>
-
-  <footer>Nessun dato viene registrato</footer>
+  <!-- PAGINA CON TUTTE LE FOTO -->
+  <section id="scegli" hidden>
+    <div class="top">
+      <a href="#" aria-label="Indietro">←</a>
+      <span>Scegli manualmente</span>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
 </main>
 
 <div class="bar" id="bar">
@@ -79,10 +89,11 @@ footer{text-align:center;color:var(--c2);font-size:12px;margin-top:40px}
 <script>
 /* ═══════ VALORI DA MODIFICARE ═══════ */
 const API = "https://TUO-WORKER.TUOACCOUNT.workers.dev";
-const CARTELLA = "foto";        // cartella del repository con tutte le foto
+/* Cartella delle foto sull'ALTRO sito (senza barra finale) */
+const BASE_FOTO = "https://idk34-di.github.io/NOME-REPO/foto";
 const PREZZO_PACK = 10;         // euro
 const PREZZO_SINGOLA = 0.99;    // euro
-const LATO_MAX = 500;           // lato massimo (px) delle foto mostrate sul sito
+const LATO_MAX = 500;           // lato massimo (px) delle foto mostrate
 const QUALITA = 0.35;           // qualità JPEG delle foto mostrate (0-1)
 
 /* Le 12 foto del pacchetto (le prime 3 finiscono nel ventaglio) */
@@ -108,19 +119,23 @@ const TUTTE = [
 /* ═══════ FINE VALORI ═══════ */
 
 const eur = x => x.toFixed(2).replace(".", ",") + " €";
-const src = nome => CARTELLA + "/" + nome;
+const src = nome => BASE_FOTO + "/" + nome;
 
-/* Carica la foto e la mostra ridotta e a bassa qualità (disegnata su canvas) */
+/* Scarica la foto dall'altro sito e la mostra ridotta e a bassa qualità */
 function caricaBassa(img){
   const o = new Image();
+  o.crossOrigin = "anonymous";   // GitHub Pages permette la lettura da altri siti
   o.onload = () => {
-    const k = Math.min(1, LATO_MAX / Math.max(o.naturalWidth, o.naturalHeight));
-    const c = document.createElement("canvas");
-    c.width = Math.round(o.naturalWidth * k);
-    c.height = Math.round(o.naturalHeight * k);
-    c.getContext("2d").drawImage(o, 0, 0, c.width, c.height);
-    img.src = c.toDataURL("image/jpeg", QUALITA);
+    try{
+      const k = Math.min(1, LATO_MAX / Math.max(o.naturalWidth, o.naturalHeight));
+      const c = document.createElement("canvas");
+      c.width = Math.round(o.naturalWidth * k);
+      c.height = Math.round(o.naturalHeight * k);
+      c.getContext("2d").drawImage(o, 0, 0, c.width, c.height);
+      img.src = c.toDataURL("image/jpeg", QUALITA);
+    }catch(e){ console.error("Canvas bloccato:", e); }
   };
+  o.onerror = () => console.error("Foto non trovata:", src(img.dataset.nome));
   o.src = src(img.dataset.nome);
 }
 
@@ -140,11 +155,10 @@ PACCHETTO.slice(0, 3).forEach(n => {
   caricaBassa(im);
 });
 
-/* Griglia: si costruisce solo quando premi "Scegli manualmente",
-   e ogni foto viene caricata solo quando sta per entrare nello schermo */
+/* Pagina "Scegli manualmente": si costruisce solo la prima volta che la apri,
+   e ogni foto si carica solo quando sta per entrare nello schermo */
 const sel = new Set();
 const grid = document.getElementById("grid");
-const toggle = document.getElementById("toggle");
 let costruita = false;
 
 function costruisciGriglia(){
@@ -173,17 +187,24 @@ function costruisciGriglia(){
   costruita = true;
 }
 
-toggle.onclick = () => {
-  if(!costruita) costruisciGriglia();
-  const aperta = grid.classList.toggle("open");
-  toggle.classList.toggle("open", aperta);
-};
-
 function aggiorna(){
+  const inScelta = location.hash === "#scegli";
   document.getElementById("n").textContent = sel.size;
   document.getElementById("tot").textContent = eur(sel.size * PREZZO_SINGOLA);
-  document.getElementById("bar").classList.toggle("show", sel.size > 0);
+  document.getElementById("bar").classList.toggle("show", inScelta && sel.size > 0);
 }
+
+/* Navigazione tra home e pagina di scelta (il tasto indietro funziona) */
+function route(){
+  const inScelta = location.hash === "#scegli";
+  document.getElementById("home").hidden = inScelta;
+  document.getElementById("scegli").hidden = !inScelta;
+  if(inScelta && !costruita) costruisciGriglia();
+  window.scrollTo(0, 0);
+  aggiorna();
+}
+addEventListener("hashchange", route);
+route();
 
 /* Pagamento */
 async function checkout(body){
